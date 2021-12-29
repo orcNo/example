@@ -1,4 +1,3 @@
-//#include "./window.h"
 
 #ifdef WIN32
 #define printf OutputDebugString
@@ -10,6 +9,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+
+#include "swindow.h"
+#include "sbutton.h"
 
 
 SDL_Surface* LoadImage(std::string path) {
@@ -37,6 +39,9 @@ int main(int argc, char** argv) {
         return -1;
 
     SDL_Window* w = SDL_CreateWindow("window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    SWindow sw(w);
+    SButton sb(&sw);
+
     SDL_Renderer *r  = SDL_CreateRenderer(w, -1, SDL_RENDERER_ACCELERATED);
 
     int width, height;
@@ -73,6 +78,7 @@ int main(int argc, char** argv) {
 
         SDL_UpdateTexture(t, nullptr, pixels, surface->pitch);
         SDL_RenderCopy(r, t, nullptr, nullptr);
+        sw.draw(r);
         SDL_RenderPresent(r);
 
         // update game state, draw the current frame

@@ -4,8 +4,8 @@ project(window)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(SOURCE main.cpp window.cpp)
-set(HEADER window.h)
+set(SOURCE main.cpp swindow.cpp sbutton.cpp)
+set(HEADER swindow.h sbutton.h)
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADER})
 
