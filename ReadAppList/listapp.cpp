@@ -1,9 +1,10 @@
 #include "listapp.h"
 
 #include <stdarg.h>
-
+#ifdef WIN32
 #include <windows.h>
 #include <windef.h>
+#endif
 
 #ifdef WIN32
 #define MAX_KEY_LENGTH 255
@@ -22,7 +23,6 @@ void ReadRegistryKey(HKEY hKey, const char *subKey, Exp *exp, Action *action);
 std::vector<std::pair<HKEY, std::string>> keyList = { {HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
                                      {HKEY_CURRENT_USER ,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"},
                                      {HKEY_LOCAL_MACHINE, "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"}};
-#endif
 
 AppInfo::AppInfo(const AppInfo& rhl)
     : name(rhl.name)
@@ -192,3 +192,4 @@ void ReadRegistryKey(HKEY hKey, const char *subKey, Exp* exp , Action* cb) {
     }
     RegCloseKey(hTestKey);
 }
+#endif
