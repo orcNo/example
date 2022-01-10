@@ -14,8 +14,18 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
+#include <cstdio>
 
 USING_NAMESPACE_SDL
+
+int eventWatch(void *data, SDL_Event* ev) {
+    if (ev->type != SDL_WINDOWEVENT)
+        return 0;
+    auto w = (SWindow*)data;
+    auto e = ev->window;
+    w->windowPro(e);
+    return 0;
+}
 
 SWindow::SWindow(SApp& app)
     : SObj()
@@ -31,15 +41,24 @@ SWindow::~SWindow() {
 }
 
 void SWindow::init() {
+    auto wAttr = SDL_WINDOW_RESIZABLE;
     _w = 800;
     _h = 400;
-    auto wAttr = SDL_WINDOW_RESIZABLE;
 
     _sdl_var = SDL_CreateWindow("Render", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _w, _h, wAttr);
+    if (!_sdl_var)
+        printf("get window error: %s!\n", SDL_GetError());
     _render = SDL_CreateRenderer(_sdl_var, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); 
-    //_surface.setVar(SDL_GetWindowSurface(_sdl_var));
     _surface = SDL_GetWindowSurface(_sdl_var);
-
+    if (!_surface) {
+        printf("get window surface error: %s!\n", SDL_GetError());
+    } else {
+        _w = _surface->w;
+        _h = _surface->h;
+        _texture = SDL_CreateTexture(_render, _surface->format->format
+                , SDL_TEXTUREACCESS_STREAMING, _surface->w, _surface->h);
+    }
+    SDL_AddEventWatch(eventWatch, this);
 
     updateWindow();
 }
@@ -71,6 +90,7 @@ void SWindow::handleEvent() {
                 break;
             }
         }
+
         updateWindow();
         auto t = SDL_GetTicks64();
         auto delay = 1000 / _frame - ( t - preTick);
@@ -83,9 +103,9 @@ void SWindow::destroy() {
     if (_bkSurface)
         SDL_FreeSurface(_bkSurface);
     _bkSurface = nullptr;
-    if (_surface)
-        SDL_FreeSurface(_surface);
-    _surface = nullptr;
+    //if (_surface) //SDL_GetWindowSurface: Do not free this surface.
+    //    SDL_FreeSurface(_surface);
+    //_surface = nullptr;
     if (_texture)
         SDL_DestroyTexture(_texture);
     _texture = nullptr;
@@ -102,18 +122,34 @@ void SWindow::setBackground(std::string path) {
     SDL_RWops *rwop;
     rwop=SDL_RWFromFile(path.c_str(), "rb");
 
-    _bkSurface = IMG_LoadJPG_RW(rwop);
-    if(!_bkSurface) {
+    //_bkSurface = IMG_LoadJPG_RW(rwop);
+    auto *tmpSurface = IMG_LoadJPG_RW(rwop);
+    if(!tmpSurface) {
         char buf[1024];
         sprintf(buf, "load image error: %s\n", IMG_GetError());
         printf("%s", buf);
         // handle error
     }
+    _bkSurface = SDL_ConvertSurface(tmpSurface, _surface->format, 0);
+    if (!_bkSurface) {
+        char buf[1024];
+        sprintf(buf, "convert surface error: %s\n", IMG_GetError());
+        printf("%s", buf);
+    } else {
+        printf("set bk surface, with w=%d, height=%d\n", _bkSurface->w, _bkSurface->h);
+    }
+    SDL_FreeSurface(tmpSurface);
+    //SDL_ConvertPixels(_bkSurface->w, _bkSurface->h, //width, height,
+    //                      _bkSurface->format->format,
+    //                      _bkSurface->pixels, _bkSurface->pitch,
+    //                      f, _bkPixel, _bkSurface->pitch);
 }
 
 void SWindow::updateWindow() {
-    if (!_texture)
-        _texture = SDL_CreateTexture(_render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, _w, _h);
+    if (!_texture) {
+            _texture = SDL_CreateTexture(_render, _surface->format->format
+                    , SDL_TEXTUREACCESS_STREAMING, _surface->w, _surface->h);
+    }
     
     SDL_FillRect(_surface, nullptr, SDL_MapRGBA(_surface->format, 255, 255, 255, 0));
     if (_bkSurface) {
@@ -125,10 +161,11 @@ void SWindow::updateWindow() {
             .w = w,
             .h = h
         };
-        auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
-        //auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
+        printf("blit surface with rect, w = %d, h = %d\n", w, h);
+        //auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
+        auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
         if (ret != 0) {
-            printf("blit surface error: %s", SDL_GetError());
+            printf("blit surface error: %s\n", SDL_GetError());
         }
     }
     SDL_Rect rt = {
@@ -137,10 +174,9 @@ void SWindow::updateWindow() {
         .w = _w,
         .h = _h
     };
-    if (_bkSurface) {
-        SDL_UpdateTexture(_texture, nullptr, _bkSurface->pixels, _bkSurface->pitch);
-    }
-    //SDL_UpdateTexture(_texture, nullptr, _surface->pixels, _surface->pitch);
+    //if (_bkSurface)
+    //    SDL_UpdateTexture(_texture, nullptr, _bkSurface->pixels, _bkSurface->pitch);
+    SDL_UpdateTexture(_texture, nullptr, _surface->pixels, _surface->pitch);
 
     SDL_RenderClear(_render);
     SDL_RenderCopy(_render, _texture, nullptr, nullptr);
@@ -173,10 +209,19 @@ bool SWindow::inputPro(SDL_Event &e) {
 
 bool SWindow::windowPro(SDL_WindowEvent &e) {
     switch (e.type) {
+        case SDL_WINDOWEVENT_RESIZED:
         case SDL_WINDOWEVENT_SIZE_CHANGED:
             _w = e.data1;
             _h = e.data2;
             _surface = SDL_GetWindowSurface(_sdl_var);
+            if (_w != _surface->w || _h != _surface->h)
+                printf("using old size surface");
+            else
+                printf("get new surface with w=%d, h=%d", _surface->w, _surface->w);
+            if (_texture)
+                SDL_DestroyTexture(_texture);
+            _texture = SDL_CreateTexture(_render, _surface->format->format
+                    , SDL_TEXTUREACCESS_STREAMING, _surface->w, _surface->h);
             break;
         default:
             break;

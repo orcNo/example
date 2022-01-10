@@ -36,11 +36,11 @@ public:
 
     void setBackground(std::string path);
 
+    bool windowPro(SDL_WindowEvent &e);
 private:
     void draw(SDL_Renderer*) override {}
     void draw(SDL_Renderer *r, SDL_Surface *s);
 
-    bool windowPro(SDL_WindowEvent &e);
     bool inputPro(SDL_Event &e);
 
 private:
