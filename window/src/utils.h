@@ -16,6 +16,9 @@ inline float radians(float f) {
     return f * D_PI / 180.0f;
 }
 
+#define LOG printf
+#define DLOG printf
+#define ELOG printf
 
 //TODO: 如是不是linux要打开
 #if 0

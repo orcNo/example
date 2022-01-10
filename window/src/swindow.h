@@ -42,6 +42,7 @@ private:
     void draw(SDL_Renderer *r, SDL_Surface *s);
 
     bool inputPro(SDL_Event &e);
+    void updateSurfaceAndTexture();
 
 private:
     void updateWindow();

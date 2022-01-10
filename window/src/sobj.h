@@ -18,6 +18,7 @@ public:
     inline operator T*() { return _sdl_var; }
     inline operator const T*() const { return _sdl_var; }
     //inline SdlStruct& operator =(T* v) { if (_sdl_var) destroy(); _sdl_var = v; return *this; }
+    inline T* get() const { return _sdl_var; }
     inline T* operator ->() { return _sdl_var; }
     inline const T* operator ->() const { return _sdl_var; }
     inline void setVar(T* v) { destroy(); _sdl_var = v; }
