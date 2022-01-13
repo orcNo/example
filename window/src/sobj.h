@@ -5,10 +5,17 @@
 
 #include <list>
 
+#ifdef WIN32
+#include <SDL.h>
+#include <SDL_render.h>
+#include <SDL_video.h>
+#include <SDL_surface.h>
+#else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_surface.h>
+#endif
 
 template <typename T>
 class SdlStruct {

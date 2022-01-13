@@ -8,10 +8,6 @@
 
 #include <string>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
-
 #define COLOR_BIT 4
 
 NAMESPACE_SDL_BEGIN

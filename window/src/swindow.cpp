@@ -10,10 +10,6 @@
 #include <SDL_rect.h>
 #include <SDL_surface.h>
 #include <SDL_timer.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
 #include <cstdio>
 
 USING_NAMESPACE_SDL
@@ -122,9 +118,9 @@ void SWindow::setBackground(std::string path) {
     //SSurface s(path);
     SDL_RWops *rwop;
     rwop=SDL_RWFromFile(path.c_str(), "rb");
-
     //_bkSurface = IMG_LoadJPG_RW(rwop);
-    auto *tmpSurface = IMG_LoadJPG_RW(rwop);
+    //auto *tmpSurface = IMG_LoadJPG_RW(rwop);
+    auto *tmpSurface = IMG_LoadPNG_RW(rwop);
     if(!tmpSurface) {
         char buf[1024];
         sprintf(buf, "load image error: %s\n", IMG_GetError());
@@ -151,21 +147,27 @@ void SWindow::updateWindow() {
         updateSurfaceAndTexture();
     }
     
-    SDL_UpdateTexture(_texture, nullptr, _surface->pixels, _surface->pitch);
-
     SDL_RenderClear(_render);
-    SDL_RenderCopy(_render, _texture, nullptr, nullptr);
     draw(_render);
+    //SDL_RenderCopy(_render, _texture, nullptr, nullptr);
     SDL_RenderPresent(_render);
 }
 
 void SWindow::draw(SDL_Renderer *r) {
+#ifdef WIN32
+    SDL_Rect rt;
+    rt.x = 0;
+    rt.y = 0;
+    rt.w = _w;
+    rt.h = _h;
+#else
     SDL_Rect rt = {
         .x = 0,
         .y = 0,
         .w = _w,
-        .h = _h 
+        .h = _h
     };
+#endif
     SDL_SetRenderDrawColor(r, 255, 0, 0, 0);
     SDL_RenderFillRect(r, &rt);
 
@@ -181,18 +183,31 @@ void SWindow::drawBackground() {
         return;
     auto w = _surface->w < _bkSurface->w ? _surface->w : _bkSurface->w;
     auto h = _surface->h < _bkSurface->h ? _surface->h : _bkSurface->h;
+#ifdef WIN32
+    SDL_Rect rt;
+    rt.x = 0;
+    rt.y = 0;
+    rt.w = _w;
+    rt.h = _h;
+#else
     SDL_Rect rt = {
         .x = 0,
         .y = 0,
         .w = w,
         .h = h
     };
+#endif
     DLOG("blit surface with rect, w = %d, h = %d\n", w, h);
     //auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
-    auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
-    if (ret != 0) {
-        ELOG("blit surface error: %s\n", SDL_GetError());
+    //auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
+    auto *tx = SDL_CreateTexture(_render, _bkSurface->format->format, 0, _w, _h);
+    if (0 != SDL_UpdateTexture(tx, nullptr, _bkSurface->pixels, _surface->pitch)) {
+        printf("update error!");
     }
+    SDL_RenderCopy(_render, tx, nullptr, nullptr);
+    //if (ret != 0) {
+    //    ELOG("blit surface error: %s\n", SDL_GetError());
+    //}
 }
 
 bool SWindow::inputPro(SDL_Event &e) {

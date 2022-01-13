@@ -1,10 +1,11 @@
-#ifdef WIN32
-#define printf OutputDebugString
-#endif
-
 #include <stdio.h>
 #include <iostream>
 #include <string>
+
+//#ifdef WIN32
+//#include <debugapi.h>
+//#define printf OutputDebugString
+//#endif
 
 #include "sapp.h"
 #include "swindow.h"
@@ -31,7 +32,11 @@ int main(int argc, char** argv) {
     SApp app;
 //    auto surface = LoadImage("C:\\Users\\longqi\\Desktop\\yuan.jpg");
     SWindow sw(app);
+#ifdef _WIN32
+    sw.setBackground("C:\\Users\\orcno\\Pictures\\Saved Pictures\\yueyetu.png");
+#else
     sw.setBackground("/home/orcno/Pic/Wallpapers/xiaoyuan.jpg");
+#endif
     sw.show();
 
     SButton btn(&sw);
