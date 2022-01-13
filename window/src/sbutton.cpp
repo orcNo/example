@@ -21,5 +21,6 @@ SButton::SButton(SWindow *parent)
 
 
 void SButton::draw(SDL_Renderer *r) {
+    SDL_SetRenderDrawColor(r, 255, 255, 0, 0);
     SDL_RenderDrawRect(r, _rect);
 }

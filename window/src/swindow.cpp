@@ -34,6 +34,8 @@ SWindow::SWindow(SApp& app)
     , _texture(nullptr)
     , _frame(60) {
     app.setWindow(this);
+
+    init();
 }
 
 SWindow::~SWindow() {
@@ -142,67 +144,55 @@ void SWindow::setBackground(std::string path) {
 
 void SWindow::updateWindow() {
     int w, h;
-    SDL_GetWindowSize(get(), &w, &h);
+    SDL_GetWindowSize(*this, &w, &h);
     if (w != _w || h != _h) {
         _w = w;
         _h = h;
         updateSurfaceAndTexture();
     }
-    if (!_texture) {
-            _texture = SDL_CreateTexture(_render, _surface->format->format
-                    , SDL_TEXTUREACCESS_STREAMING, _surface->w, _surface->h);
-    }
     
-    SDL_FillRect(_surface, nullptr, SDL_MapRGBA(_surface->format, 255, 255, 255, 0));
-    if (_bkSurface) {
-        auto w = _surface->w < _bkSurface->w ? _surface->w : _bkSurface->w;
-        auto h = _surface->h < _bkSurface->h ? _surface->h : _bkSurface->h;
-        SDL_Rect rt = {
-            .x = 0,
-            .y = 0,
-            .w = w,
-            .h = h
-        };
-        DLOG("blit surface with rect, w = %d, h = %d\n", w, h);
-        //auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
-        auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
-        if (ret != 0) {
-            ELOG("blit surface error: %s\n", SDL_GetError());
-        }
-    }
-    SDL_Rect rt = {
-        .x = 0,
-        .y = 0,
-        .w = _w,
-        .h = _h
-    };
-    //if (_bkSurface)
-    //    SDL_UpdateTexture(_texture, nullptr, _bkSurface->pixels, _bkSurface->pitch);
     SDL_UpdateTexture(_texture, nullptr, _surface->pixels, _surface->pitch);
 
     SDL_RenderClear(_render);
     SDL_RenderCopy(_render, _texture, nullptr, nullptr);
+    draw(_render);
     SDL_RenderPresent(_render);
 }
 
-void SWindow::draw(SDL_Renderer *r, SDL_Surface *s) {
+void SWindow::draw(SDL_Renderer *r) {
     SDL_Rect rt = {
         .x = 0,
         .y = 0,
-        .w = s->w,
-        .h = s->h
+        .w = _w,
+        .h = _h 
     };
-    //SDL_SetRenderDrawColor(r, 255, 0, 0, 0);
-    SDL_Color c = {
-        .r = 255,
-        .g = 0,
-        .b = 0,
-        .a = 0
-    };
+    SDL_SetRenderDrawColor(r, 255, 0, 0, 0);
+    SDL_RenderFillRect(r, &rt);
+
+    drawBackground();
     //SDL_Log("on function draw, surface's w: %d, surface's h: %d", rt.w, rt.h);
 
-    SDL_RenderFillRect(r, &rt);
-    SDL_FillRect(s, &rt, SDL_MapRGBA(s->format, 255, 255, 255, 0));
+    //SDL_FillRect(s, &rt, SDL_MapRGBA(s->format, 255, 255, 255, 0));
+    DrawChildren(r);
+}
+
+void SWindow::drawBackground() {
+    if (!_bkSurface)
+        return;
+    auto w = _surface->w < _bkSurface->w ? _surface->w : _bkSurface->w;
+    auto h = _surface->h < _bkSurface->h ? _surface->h : _bkSurface->h;
+    SDL_Rect rt = {
+        .x = 0,
+        .y = 0,
+        .w = w,
+        .h = h
+    };
+    DLOG("blit surface with rect, w = %d, h = %d\n", w, h);
+    //auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
+    auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
+    if (ret != 0) {
+        ELOG("blit surface error: %s\n", SDL_GetError());
+    }
 }
 
 bool SWindow::inputPro(SDL_Event &e) {
@@ -215,6 +205,15 @@ void SWindow::updateSurfaceAndTexture() {
     if (_texture)
         SDL_DestroyTexture(_texture);
     _texture = SDL_CreateTextureFromSurface(_render, _surface);
+}
+
+void SWindow::DrawChildren(SDL_Renderer *r) {
+    auto vchild = children();
+    auto ite = vchild.begin();
+    while (ite != vchild.end()) {
+        (*ite)->draw(r);
+        ++ite;
+    }
 }
 
 bool SWindow::windowPro(SDL_WindowEvent &e) {

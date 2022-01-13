@@ -38,12 +38,15 @@ public:
 
     bool windowPro(SDL_WindowEvent &e);
 private:
-    void draw(SDL_Renderer*) override {}
-    void draw(SDL_Renderer *r, SDL_Surface *s);
+    void draw(SDL_Renderer*) override;
+//    void draw(SDL_Renderer *r, SDL_Surface *s);
+
+    void drawBackground();
 
     bool inputPro(SDL_Event &e);
     void updateSurfaceAndTexture();
 
+    void DrawChildren(SDL_Renderer *r);
 private:
     void updateWindow();
 

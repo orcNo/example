@@ -31,9 +31,10 @@ int main(int argc, char** argv) {
     SApp app;
 //    auto surface = LoadImage("C:\\Users\\longqi\\Desktop\\yuan.jpg");
     SWindow sw(app);
-    sw.init();
     sw.setBackground("/home/orcno/Pic/Wallpapers/xiaoyuan.jpg");
     sw.show();
+
+    SButton btn(&sw);
 
     return app.exec(); 
     

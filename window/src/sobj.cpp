@@ -20,10 +20,10 @@ void SObj::setParent(SObj *p) {
         return;
 
     if (_parent)
-        _parent->_child.remove(this);
+        _parent->_vchild.remove(this);
 
     _parent = p;
-    _parent->_child.push_back(this);
+    _parent->_vchild.push_back(this);
 }
 
 bool SObj::update() {
@@ -39,8 +39,8 @@ bool SObj::update() {
 }
 std::list<SObj*> SObj::getDutyObj() {
     std::list<SObj *>dutyList;
-    auto ite = _child.begin();
-    for(;ite != _child.end(); ++ite) {
+    auto ite = _vchild.begin();
+    for(;ite != _vchild.end(); ++ite) {
         dutyList.merge((*ite)->getDutyObj());
     }
     

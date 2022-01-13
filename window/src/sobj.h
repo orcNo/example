@@ -50,10 +50,12 @@ public:
 
 public:
     void setParent(SObj *p);
+    std::list<SObj*> children() const { return _vchild; }
+
+    virtual void draw(SDL_Renderer *) = 0;
 
 protected:
     virtual bool update();
-    virtual void draw(SDL_Renderer *) = 0;
     void drawTo(SObj *);
 
     SDL_Surface* surface() const { return _surface;}
@@ -62,7 +64,7 @@ protected:
 
 private:
     SDL_Surface *_surface;
-    std::list<SObj*> _child;
+    std::list<SObj*> _vchild;
     SObj *_parent;
     bool _changed;
     SDL_Rect _rt;
