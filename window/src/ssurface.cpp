@@ -40,9 +40,7 @@ SSurface::SSurface(std::string path) {
 
     _sdl_var = IMG_LoadJPG_RW(rwop);
     if(!_sdl_var) {
-        char buf[1024];
-        sprintf(buf, "load image error: %s\n", IMG_GetError());
-        printf("%s", buf);
+        DLOG("load image error: %s\n", IMG_GetError());
         // handle error
     }
 }

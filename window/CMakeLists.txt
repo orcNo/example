@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.15)
+﻿cmake_minimum_required (VERSION 3.15)
 
 project(window)
 
@@ -16,6 +16,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/s
 set (LIBS SDL2 SDL2_image SDL2_ttf)
 
 if (WIN32)
+    add_definitions(-DUNICODE)
+
     if (MSVC_VERSION GREATER_EQUAL "1900")
         include(CheckCXXCompilerFlag)
         CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)

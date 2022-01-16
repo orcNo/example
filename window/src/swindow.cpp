@@ -10,7 +10,9 @@
 #include <SDL_rect.h>
 #include <SDL_surface.h>
 #include <SDL_timer.h>
+
 #include <cstdio>
+#include <algorithm>
 
 USING_NAMESPACE_SDL
 
@@ -45,11 +47,11 @@ void SWindow::init() {
 
     _sdl_var = SDL_CreateWindow("Render", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _w, _h, wAttr);
     if (!get())
-        printf("get window error: %s!\n", SDL_GetError());
+        DLOG("get window error: %s!\n", SDL_GetError());
     _render = SDL_CreateRenderer(get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); 
     _surface = SDL_GetWindowSurface(get());
     if (!_surface) {
-        printf("get window surface error: %s!\n", SDL_GetError());
+        DLOG("get window surface error: %s!\n", SDL_GetError());
     } else {
         _w = _surface->w;
         _h = _surface->h;
@@ -91,8 +93,10 @@ void SWindow::handleEvent() {
         updateWindow();
         auto t = SDL_GetTicks64();
         auto delay = 1000 / _frame - ( t - preTick);
-        if (delay > 0)
-            SDL_Delay(delay);
+        if (delay > 0) {
+//            SDL_Delay(delay);
+            //DLOG("delay %dms.\n", delay);
+        }
     }
 }
 
@@ -116,24 +120,23 @@ void SWindow::destroy() {
 
 void SWindow::setBackground(std::string path) {
     //SSurface s(path);
-    SDL_RWops *rwop;
-    rwop=SDL_RWFromFile(path.c_str(), "rb");
     //_bkSurface = IMG_LoadJPG_RW(rwop);
     //auto *tmpSurface = IMG_LoadJPG_RW(rwop);
+    _bkTexture = IMG_LoadTexture(_render, path.c_str());
+    return;
+
+    SDL_RWops *rwop;
+    rwop=SDL_RWFromFile(path.c_str(), "rb");
     auto *tmpSurface = IMG_LoadPNG_RW(rwop);
     if(!tmpSurface) {
-        char buf[1024];
-        sprintf(buf, "load image error: %s\n", IMG_GetError());
-        printf("%s", buf);
+        DLOG("load image error: %s\n", IMG_GetError());
         // handle error
     }
     _bkSurface = SDL_ConvertSurface(tmpSurface, _surface->format, 0);
     if (!_bkSurface) {
-        char buf[1024];
-        sprintf(buf, "convert surface error: %s\n", IMG_GetError());
-        printf("%s", buf);
+        DLOG("convert surface error: %s\n", IMG_GetError());
     } else {
-        printf("set bk surface, with w=%d, height=%d\n", _bkSurface->w, _bkSurface->h);
+        DLOG("set bk surface, with w=%d, height=%d\n", _bkSurface->w, _bkSurface->h);
     }
     SDL_FreeSurface(tmpSurface);
 }
@@ -179,10 +182,6 @@ void SWindow::draw(SDL_Renderer *r) {
 }
 
 void SWindow::drawBackground() {
-    if (!_bkSurface)
-        return;
-    auto w = _surface->w < _bkSurface->w ? _surface->w : _bkSurface->w;
-    auto h = _surface->h < _bkSurface->h ? _surface->h : _bkSurface->h;
 #ifdef WIN32
     SDL_Rect rt;
     rt.x = 0;
@@ -197,17 +196,32 @@ void SWindow::drawBackground() {
         .h = h
     };
 #endif
-    DLOG("blit surface with rect, w = %d, h = %d\n", w, h);
-    //auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
-    //auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
-    auto *tx = SDL_CreateTexture(_render, _bkSurface->format->format, 0, _w, _h);
-    if (0 != SDL_UpdateTexture(tx, nullptr, _bkSurface->pixels, _surface->pitch)) {
-        printf("update error!");
+    if (_bkTexture) {
+        uint32_t f;
+        int a, w, h;
+        SDL_QueryTexture(_bkTexture, &f, &a, &w, &h);
+        rt.w = std::min(rt.w, w);
+        rt.h = std::min(rt.h, h);
+        SDL_RenderCopy(_render, _bkTexture, &rt, &rt);
+        return;
     }
-    SDL_RenderCopy(_render, tx, nullptr, nullptr);
+
+    if (!_bkSurface)
+        return;
+    auto w = _surface->w < _bkSurface->w ? _surface->w : _bkSurface->w;
+    auto h = _surface->h < _bkSurface->h ? _surface->h : _bkSurface->h;
+    //DLOG("blit surface with rect, w = %d, h = %d\n", w, h);
+    //auto ret = SDL_BlitSurface(_bkSurface, &rt, _surface, &rt);
+    ////auto ret = SDL_BlitSurface(_bkSurface, nullptr, _surface, nullptr);
     //if (ret != 0) {
     //    ELOG("blit surface error: %s\n", SDL_GetError());
     //}
+    //SDL_UpdateWindowSurface(*this);
+    auto *tx = SDL_CreateTexture(_render, _bkSurface->format->format, 0, _w, _h);
+    if (0 != SDL_UpdateTexture(tx, nullptr, _bkSurface->pixels, _surface->pitch)) {
+        DLOG("update error!");
+    }
+    SDL_RenderCopy(_render, tx, nullptr, nullptr);
 }
 
 bool SWindow::inputPro(SDL_Event &e) {

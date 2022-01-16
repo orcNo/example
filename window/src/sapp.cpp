@@ -1,9 +1,12 @@
 #include "sapp.h"
 
-#include "utils.h"
-#include "swindow.h"
 #include <cstdlib>
 #include <memory>
+
+#include <SDL_ttf.h>
+
+#include "utils.h"
+#include "swindow.h"
 
 USING_NAMESPACE_SDL
 
@@ -17,6 +20,7 @@ SApp::SApp() {
 
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+    TTF_Init();
 
     _ins = this;
 }
@@ -39,6 +43,7 @@ int SApp::exec() {
         _sw->handleEvent();
     }
 
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 

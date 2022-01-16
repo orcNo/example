@@ -1,15 +1,10 @@
-#include <stdio.h>
 #include <iostream>
 #include <string>
-
-//#ifdef WIN32
-//#include <debugapi.h>
-//#define printf OutputDebugString
-//#endif
 
 #include "sapp.h"
 #include "swindow.h"
 #include "sbutton.h"
+
 
 USING_NAMESPACE_SDL
 
@@ -19,9 +14,7 @@ SDL_Surface* LoadImage(std::string path) {
     rwop=SDL_RWFromFile(path.c_str(), "rb");
     image=IMG_LoadJPG_RW(rwop);
     if(!image) {
-        char buf[1024];
-        sprintf(buf, "load image error: %s\n", IMG_GetError());
-        printf("%s", buf);
+        DLOG("load image error: %s\n", IMG_GetError());
         // handle error
     }
 

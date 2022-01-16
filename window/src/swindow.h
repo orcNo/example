@@ -52,6 +52,7 @@ private:
     //SSurface _surface;
     SDL_Surface *_surface{nullptr};
     SDL_Surface *_bkSurface{nullptr};
+    SDL_Texture *_bkTexture{nullptr};
     SDL_Texture *_texture{nullptr};
     int _frame;
     Scene *_scene{nullptr};
