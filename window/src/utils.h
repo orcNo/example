@@ -17,7 +17,11 @@ inline float radians(float f) {
 }
 
 #ifdef WIN32
+#ifndef UNICODE
 void winprintf(const char* fmt, ...);
+#else
+void winprintf(const wchar_t* fmt, ...);
+#endif
 #define LOG winprintf
 #define DLOG winprintf
 #define ELOG winprintf

@@ -1,4 +1,4 @@
-﻿#include <Windows.h>
+#include <Windows.h>
 #include <debugapi.h>
 #include <atlconv.h>
 
@@ -22,7 +22,24 @@ wchar_t* a2w(const char* a) {
 }
 
 #ifdef WIN32
-void winrintf(const wchar_t* fmt, ...) {
+#ifndef UNICODE
+void winprintf(const char* fmt, ...) {
+    char buf[1024];
+    va_list aptr;
+    int ret;
+
+    va_start(aptr, fmt);
+    ret = vsprintf(buf, fmt, aptr);
+    assert(ret >= 0);
+    va_end(aptr);
+
+    //wchar_t *wbuf = a2w(buf);
+    //OutputDebugString(wbuf);
+    OutputDebugString(buf);
+    //free((void*)wbuf);
+}
+#else
+void winprintf(const wchar_t* fmt, ...) {
     wchar_t buf[1024];
     va_list aptr;
     int ret;
@@ -37,6 +54,7 @@ void winrintf(const wchar_t* fmt, ...) {
     OutputDebugString(buf);
     //free((void*)wbuf);
 }
+#endif
 #endif
 
 //inline float radians(float f) {

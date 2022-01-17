@@ -26,6 +26,14 @@ void SObj::setParent(SObj *p) {
     _parent->_vchild.push_back(this);
 }
 
+bool SObj::proEvent(const SDL_Event& e) {
+    auto ite = _vchild.begin();
+    for(;ite != _vchild.end(); ++ite) {
+        if ((*ite)->proEvent(e))
+            return true;
+    };
+}
+
 bool SObj::update() {
     auto dlist = getDutyObj();
     if (!dlist.size())

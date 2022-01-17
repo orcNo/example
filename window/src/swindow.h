@@ -32,9 +32,14 @@ public:
 
     void setBackground(std::string path);
 
-    bool windowPro(SDL_WindowEvent &e);
+    bool windowPro(const SDL_WindowEvent &e);
+
+protected:
+    bool proEvent(const SDL_Event &e) override;
+
 private:
     void draw(SDL_Renderer*) override;
+
 //    void draw(SDL_Renderer *r, SDL_Surface *s);
 
     void drawBackground();

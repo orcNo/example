@@ -73,22 +73,7 @@ void SWindow::handleEvent() {
         if (e.type == SDL_QUIT)
             _quilt = true;
         
-        switch (e.type) {
-            case SDL_WINDOWEVENT: {
-                windowPro(e.window);
-                break;
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-                break;
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEWHEEL:
-            case SDL_MOUSEMOTION:
-                break;
-            default:
-                break;
-            }
-        }
+        proEvent(e);
 
         updateWindow();
         auto t = SDL_GetTicks64();
@@ -154,6 +139,29 @@ void SWindow::updateWindow() {
     draw(_render);
     //SDL_RenderCopy(_render, _texture, nullptr, nullptr);
     SDL_RenderPresent(_render);
+}
+
+bool SWindow::proEvent(const SDL_Event &e) {
+    if (SObj::proEvent(e))
+        return true;
+
+    switch (e.type) {
+        case SDL_WINDOWEVENT: {
+            windowPro(e.window);
+            break;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            break;
+        case SDL_MOUSEBUTTONUP:
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEWHEEL:
+        case SDL_MOUSEMOTION:
+            break;
+        default:
+            break;
+        }
+    }
+    return true;
 }
 
 void SWindow::draw(SDL_Renderer *r) {
@@ -245,7 +253,7 @@ void SWindow::DrawChildren(SDL_Renderer *r) {
     }
 }
 
-bool SWindow::windowPro(SDL_WindowEvent &e) {
+bool SWindow::windowPro(const SDL_WindowEvent &e) {
     switch (e.type) {
         case SDL_WINDOWEVENT_RESIZED:
         case SDL_WINDOWEVENT_SIZE_CHANGED:

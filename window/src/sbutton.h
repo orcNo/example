@@ -2,24 +2,12 @@
 #define __SBUTTON_H
 
 #include "swindow.h"
-#include "sobj.h"
+#include "virtualbutton.h"
 
 struct SDL_Renderer;
 class SDL_Rect;
 
 NAMESPACE_SDL_BEGIN
-
-class SRect : public SdlStruct<SDL_Rect> {
-public:
-    const int SRECT_DEFAULT_XPOS = 0;
-    const int SRECT_DEFAULT_YPOS = 0;
-    const int SRECT_DEFAULT_W = 100;
-    const int SRECT_DEFAULT_H = 40;
-public:
-    SRect();
-    ~SRect();
-    //SDL_CPP_OBJECT(SDL_Rect, _rt)
-};
 
 class SButton : public SObj {
 public:

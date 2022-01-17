@@ -62,6 +62,7 @@ public:
     virtual void draw(SDL_Renderer *) = 0;
 
 protected:
+    virtual bool proEvent(const SDL_Event&e);
     virtual bool update();
     void drawTo(SObj *);
 

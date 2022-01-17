@@ -1,4 +1,4 @@
-#include "sbutton.h"
+#include "virtualbutton.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -7,12 +7,23 @@
 
 USING_NAMESPACE_SDL
 
-SButton::SButton(SWindow *parent)
+SRect::SRect() {
+    _sdl_var = new SDL_Rect;
+    _sdl_var->x = SRECT_DEFAULT_XPOS;
+    _sdl_var->y = SRECT_DEFAULT_YPOS;
+    _sdl_var->w = SRECT_DEFAULT_W;
+    _sdl_var->h = SRECT_DEFAULT_H;
+}
+
+SRect::~SRect() {
+}
+
+VirtualButton::VirtualButton(SWindow *parent)
     : SObj(parent) {
 }
 
 
-void SButton::draw(SDL_Renderer *r) {
+void VirtualButton::draw(SDL_Renderer *r) {
     SDL_SetRenderDrawColor(r, 255, 255, 0, 0);
     SDL_RenderDrawRect(r, _rect);
 
@@ -40,4 +51,17 @@ void SButton::draw(SDL_Renderer *r) {
     auto *textTx = SDL_CreateTextureFromSurface(r, surface);
     SDL_RenderCopy(r, textTx, _rect, _rect);
     TTF_CloseFont(font);
+}
+
+bool VirtualButton::proEvent(const SDL_Event&e) {
+    switch(e.type) {
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+        onClieck();
+        break;
+    default:
+        break;
+    }
+
+    return false;
 }
